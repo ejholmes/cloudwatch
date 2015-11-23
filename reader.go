@@ -2,7 +2,6 @@ package cloudwatch
 
 import (
 	"bytes"
-	"io"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -27,6 +26,7 @@ func NewReader(group, stream string, client *cloudwatchlogs.CloudWatchLogs) *Rea
 }
 
 func (r *Reader) Read(b []byte) (int, error) {
+	// Drain existing buffered data.
 	if r.b.Len() > 0 {
 		return r.b.Read(b)
 	}
@@ -40,18 +40,20 @@ func (r *Reader) Read(b []byte) (int, error) {
 		return 0, err
 	}
 
-	r.nextToken = resp.NextForwardToken
+	// We want to re-use the existing token in the event that
+	// NextForwardToken is nil, which means there's no new messages to
+	// consume.
+	if resp.NextForwardToken != nil {
+		r.nextToken = resp.NextForwardToken
+	}
+
+	// If there are no messages, return so that the consumer can read again.
+	if len(resp.Events) == 0 {
+		return 0, nil
+	}
 
 	for _, event := range resp.Events {
 		r.b.WriteString(*event.Message)
-	}
-
-	if r.nextToken == nil {
-		n, err := r.b.Read(b)
-		if err != nil {
-			return n, err
-		}
-		return n, io.EOF
 	}
 
 	return r.b.Read(b)
