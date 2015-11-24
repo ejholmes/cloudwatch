@@ -53,6 +53,10 @@ func (w *Writer) Write(b []byte) (int, error) {
 			}
 		}
 
+		if len(b) == 0 {
+			continue
+		}
+
 		events = append(events, &cloudwatchlogs.InputLogEvent{
 			Message:   aws.String(string(b)),
 			Timestamp: aws.Int64(now().UnixNano() / 1000000),

@@ -63,3 +63,24 @@ func TestWriter_Rejected(t *testing.T) {
 	assert.Error(t, err)
 	assert.IsType(t, &RejectedLogEventsInfoError{}, err)
 }
+
+func TestWriter_NewLine(t *testing.T) {
+	c := new(mockClient)
+	w := &Writer{
+		group:  aws.String("group"),
+		stream: aws.String("1234"),
+		client: c,
+	}
+
+	c.On("PutLogEvents", &cloudwatchlogs.PutLogEventsInput{
+		LogEvents: []*cloudwatchlogs.InputLogEvent{
+			{Message: aws.String("Hello\n"), Timestamp: aws.Int64(1000)},
+		},
+		LogGroupName:  aws.String("group"),
+		LogStreamName: aws.String("1234"),
+	}).Return(&cloudwatchlogs.PutLogEventsOutput{}, nil)
+
+	n, err := io.WriteString(w, "Hello\n")
+	assert.NoError(t, err)
+	assert.Equal(t, 6, n)
+}
