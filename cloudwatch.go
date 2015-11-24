@@ -1,6 +1,7 @@
 package cloudwatch
 
 import (
+	"io"
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -33,7 +34,7 @@ func NewGroup(group string, client *cloudwatchlogs.CloudWatchLogs) *Group {
 }
 
 // Create creates a log stream in the group and returns an io.Writer for it.
-func (g *Group) Create(stream string) (*Writer, error) {
+func (g *Group) Create(stream string) (io.Writer, error) {
 	if _, err := g.client.CreateLogStream(&cloudwatchlogs.CreateLogStreamInput{
 		LogGroupName:  &g.group,
 		LogStreamName: &stream,
@@ -45,6 +46,6 @@ func (g *Group) Create(stream string) (*Writer, error) {
 }
 
 // Open returns an io.Reader to read from the log stream.
-func (g *Group) Open(stream string) (*Reader, error) {
+func (g *Group) Open(stream string) (io.Reader, error) {
 	return NewReader(g.group, stream, g.client), nil
 }
