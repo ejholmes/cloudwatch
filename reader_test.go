@@ -1,6 +1,9 @@
 package cloudwatch
 
 import (
+	"bytes"
+	"errors"
+	"io"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -128,4 +131,24 @@ func TestReader_EndOfFile(t *testing.T) {
 	assert.Equal(t, 0, n)
 
 	c.AssertExpectations(t)
+}
+
+func TestReader_Err(t *testing.T) {
+	c := new(mockClient)
+
+	errBoom := errors.New("boom")
+	c.On("GetLogEvents", &cloudwatchlogs.GetLogEventsInput{
+		LogGroupName:  aws.String("group"),
+		LogStreamName: aws.String("1234"),
+	}).Once().Return(&cloudwatchlogs.GetLogEventsOutput{
+		Events: []*cloudwatchlogs.OutputLogEvent{
+			{Message: aws.String("Hello"), Timestamp: aws.Int64(1000)},
+		},
+	}, errBoom)
+
+	r := newReader("group", "1234", c)
+
+	b := new(bytes.Buffer)
+	_, err := io.Copy(b, r)
+	assert.Equal(t, errBoom, err)
 }
