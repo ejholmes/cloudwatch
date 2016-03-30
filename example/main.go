@@ -10,8 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/defaults"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/ejholmes/cloudwatch"
-
-	"code.google.com/p/go-uuid/uuid"
+	"github.com/pborman/uuid"
 )
 
 func main() {
