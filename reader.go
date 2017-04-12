@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"sync"
 	"time"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -31,7 +30,6 @@ func NewReader(group, stream string, client *cloudwatchlogs.CloudWatchLogs) *Rea
 }
 
 func newReader(group, stream string, client client) *Reader {
-	fmt.Println("Creating a new reader")
 	r := &Reader{
 		group:    aws.String(group),
 		stream:   aws.String(stream),
@@ -57,10 +55,7 @@ func (r *Reader) read() error {
 		LogGroupName:  r.group,
 		LogStreamName: r.stream,
 		StartFromHead: aws.Bool(true),
-	}
-
-	if r.nextToken != nil {
-		params.NextToken = r.nextToken
+		NextToken: t.nextToken,
 	}
 
 	resp, err := r.client.GetLogEvents(params)
@@ -78,7 +73,6 @@ func (r *Reader) read() error {
 
 	// // If there are no messages, return so that the consumer can read again.
 	if len(resp.Events) == 0 {
-		fmt.Println("Empty Events")
 		return nil
 	}
 
