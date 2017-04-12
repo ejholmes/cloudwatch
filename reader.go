@@ -64,14 +64,14 @@ func (r *Reader) read() error {
 		return err
 	}
 
-	// // We want to re-use the existing token in the event that
-	// // NextForwardToken is nil, which means there's no new messages to
-	// // consume.
+	// We want to re-use the existing token in the event that
+	// NextForwardToken is nil, which means there's no new messages to
+	// consume.
 	if resp.NextForwardToken != nil {
 		r.nextToken = resp.NextForwardToken
 	}
 
-	// // If there are no messages, return so that the consumer can read again.
+	// If there are no messages, return so that the consumer can read again.
 	if len(resp.Events) == 0 {
 		return nil
 	}
