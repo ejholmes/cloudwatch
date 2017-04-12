@@ -55,7 +55,7 @@ func (r *Reader) read() error {
 		LogGroupName:  r.group,
 		LogStreamName: r.stream,
 		StartFromHead: aws.Bool(true),
-		NextToken: t.nextToken,
+		NextToken:     r.nextToken,
 	}
 
 	resp, err := r.client.GetLogEvents(params)
