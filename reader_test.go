@@ -21,6 +21,7 @@ func TestReader(t *testing.T) {
 
 	c.On("GetLogEvents", &cloudwatchlogs.GetLogEventsInput{
 		LogGroupName:  aws.String("group"),
+		StartFromHead: aws.Bool(true),
 		LogStreamName: aws.String("1234"),
 	}).Once().Return(&cloudwatchlogs.GetLogEventsOutput{
 		Events: []*cloudwatchlogs.OutputLogEvent{
@@ -49,6 +50,7 @@ func TestReader_Buffering(t *testing.T) {
 
 	c.On("GetLogEvents", &cloudwatchlogs.GetLogEventsInput{
 		LogGroupName:  aws.String("group"),
+		StartFromHead: aws.Bool(true),
 		LogStreamName: aws.String("1234"),
 	}).Once().Return(&cloudwatchlogs.GetLogEventsOutput{
 		Events: []*cloudwatchlogs.OutputLogEvent{
@@ -81,6 +83,7 @@ func TestReader_EndOfFile(t *testing.T) {
 
 	c.On("GetLogEvents", &cloudwatchlogs.GetLogEventsInput{
 		LogGroupName:  aws.String("group"),
+		StartFromHead: aws.Bool(true),
 		LogStreamName: aws.String("1234"),
 	}).Once().Return(&cloudwatchlogs.GetLogEventsOutput{
 		Events: []*cloudwatchlogs.OutputLogEvent{
@@ -92,6 +95,7 @@ func TestReader_EndOfFile(t *testing.T) {
 	c.On("GetLogEvents", &cloudwatchlogs.GetLogEventsInput{
 		LogGroupName:  aws.String("group"),
 		LogStreamName: aws.String("1234"),
+		StartFromHead: aws.Bool(true),
 		NextToken:     aws.String("next"),
 	}).Once().Return(&cloudwatchlogs.GetLogEventsOutput{
 		Events: []*cloudwatchlogs.OutputLogEvent{
@@ -102,6 +106,7 @@ func TestReader_EndOfFile(t *testing.T) {
 	c.On("GetLogEvents", &cloudwatchlogs.GetLogEventsInput{
 		LogGroupName:  aws.String("group"),
 		LogStreamName: aws.String("1234"),
+		StartFromHead: aws.Bool(true),
 		NextToken:     aws.String("next"),
 	}).Once().Return(&cloudwatchlogs.GetLogEventsOutput{
 		Events: []*cloudwatchlogs.OutputLogEvent{},
@@ -139,6 +144,7 @@ func TestReader_Err(t *testing.T) {
 	errBoom := errors.New("boom")
 	c.On("GetLogEvents", &cloudwatchlogs.GetLogEventsInput{
 		LogGroupName:  aws.String("group"),
+		StartFromHead: aws.Bool(true),
 		LogStreamName: aws.String("1234"),
 	}).Once().Return(&cloudwatchlogs.GetLogEventsOutput{
 		Events: []*cloudwatchlogs.OutputLogEvent{
