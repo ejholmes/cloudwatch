@@ -43,7 +43,7 @@ func NewGroup(group string, client *cloudwatchlogs.CloudWatchLogs) *Group {
 }
 
 // Create creates a log stream in the group and returns an io.Writer for it.
-func (g *Group) Create(stream string) (io.Writer, error) {
+func (g *Group) Create(stream string, onEvent EventCallback) (io.Writer, error) {
 	if _, err := g.client.CreateLogStream(&cloudwatchlogs.CreateLogStreamInput{
 		LogGroupName:  &g.group,
 		LogStreamName: &stream,
@@ -51,7 +51,7 @@ func (g *Group) Create(stream string) (io.Writer, error) {
 		return nil, err
 	}
 
-	return NewWriter(g.group, stream, g.client), nil
+	return NewWriter(g.group, stream, g.client, onEvent), nil
 }
 
 // Open returns an io.Reader to read from the log stream.
