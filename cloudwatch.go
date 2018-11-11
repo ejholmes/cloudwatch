@@ -1,9 +1,11 @@
 package cloudwatch
 
 import (
+	"errors"
 	"io"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 )
 
@@ -42,13 +44,39 @@ func NewGroup(group string, client *cloudwatchlogs.CloudWatchLogs) *Group {
 	}
 }
 
+// Existing uses an existing log group created previously
+func (g *Group) existing(stream string) (io.Writer, error) {
+	result, err := g.client.DescribeLogStreams(&cloudwatchlogs.DescribeLogStreamsInput{
+		LogGroupName:        &g.group,
+		LogStreamNamePrefix: &stream,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(result.LogStreams) != 1 {
+		return nil, errors.New("Log stream not found " + stream)
+	}
+
+	logStream := result.LogStreams[0]
+
+	return NewWriterWithToken(g.group, stream, *logStream.UploadSequenceToken, g.client), nil
+}
+
 // Create creates a log stream in the group and returns an io.Writer for it.
 func (g *Group) Create(stream string) (io.Writer, error) {
 	if _, err := g.client.CreateLogStream(&cloudwatchlogs.CreateLogStreamInput{
 		LogGroupName:  &g.group,
 		LogStreamName: &stream,
 	}); err != nil {
-		return nil, err
+		if aerr, ok := err.(awserr.Error); ok {
+			if aerr.Code() != cloudwatchlogs.ErrCodeResourceAlreadyExistsException {
+				return nil, err
+			}
+
+			return g.existing(stream)
+		}
 	}
 
 	return NewWriter(g.group, stream, g.client), nil
