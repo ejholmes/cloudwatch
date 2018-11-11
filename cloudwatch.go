@@ -60,8 +60,7 @@ func (g *Group) existing(stream string) (io.Writer, error) {
 	}
 
 	logStream := result.LogStreams[0]
-
-	return NewWriterWithToken(g.group, stream, *logStream.UploadSequenceToken, g.client), nil
+	return NewWriterWithToken(g.group, stream, logStream.UploadSequenceToken, g.client), nil
 }
 
 // Create creates a log stream in the group and returns an io.Writer for it.
