@@ -37,12 +37,26 @@ type Writer struct {
 	sync.Mutex // This protects calls to flush.
 }
 
+// NewWriterWithToken returns a new Writer to a new Log Stream
 func NewWriter(group, stream string, client *cloudwatchlogs.CloudWatchLogs) *Writer {
 	w := &Writer{
 		group:    aws.String(group),
 		stream:   aws.String(stream),
 		client:   client,
 		throttle: time.Tick(writeThrottle),
+	}
+	go w.start() // start flushing
+	return w
+}
+
+// NewWriterWithToken returns a new Writer that accepts a sequence token from an existing AWS Log Stream
+func NewWriterWithToken(group, stream string, sequenceToken *string, client *cloudwatchlogs.CloudWatchLogs) *Writer {
+	w := &Writer{
+		group:         aws.String(group),
+		stream:        aws.String(stream),
+		sequenceToken: sequenceToken,
+		client:        client,
+		throttle:      time.Tick(writeThrottle),
 	}
 	go w.start() // start flushing
 	return w
